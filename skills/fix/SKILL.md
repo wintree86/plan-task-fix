@@ -358,4 +358,4 @@ Part of the **plan-task-fix** suite:
 - `/task` - Task tracking and progress (task.md) / 태스크 추적
 - `/fix` - Bug/improvement backlog (backlog.md) / 백로그 관리
 
-Install: `npx skills add <owner>/plan-task-fix`
+Install: `npx skills add wintree86/plan-task-fix`
