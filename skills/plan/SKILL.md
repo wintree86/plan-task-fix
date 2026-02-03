@@ -15,9 +15,9 @@ plan.md를 자동으로 생성/추가/수정하는 스킬입니다.
 
 ```
 /plan              # Summary / plan.md 현황 요약
-/plan create       # Create new plan.md / 새 plan.md 생성 (Agent)
-/plan add          # Add Phase/tasks / Phase/태스크 추가 (Agent)
-/plan edit         # Edit a Phase / 특정 Phase 수정 (Agent)
+/plan create       # Create new plan.md / 새 plan.md 생성
+/plan add          # Add Phase/tasks / Phase/태스크 추가
+/plan edit         # Edit a Phase / 특정 Phase 수정
 ```
 
 The first argument determines the command: `$ARGUMENTS`
@@ -82,7 +82,7 @@ Example / 예: /plan create Tarot app, 5 phases
 Creates a new plan.md.
 새 plan.md를 생성합니다.
 
-**Invokes plan-generator Agent. / plan-generator Agent를 호출합니다.**
+**Follows plan-generator rules below. / 아래 plan-generator 규칙을 따릅니다.**
 
 ### Syntax / 구문:
 ```
@@ -90,12 +90,12 @@ Creates a new plan.md.
 ```
 
 ### Steps / 수행 단계:
-1. Invoke plan-generator Agent / plan-generator Agent 호출
-2. Analyze request (app type, features, Phase count) / 요청 분석
-3. Generate standard plan.md template / 표준 plan.md 템플릿 생성:
+1. Analyze request (app type, features, Phase count) / 요청 분석 (앱 종류, 기능, Phase 수)
+2. Generate standard plan.md template / 표준 plan.md 템플릿 생성:
    - Project overview / 앱 개요
    - Phase checklists with IDs / Phase별 체크리스트 (ID 포함)
-4. Save plan.md to document folder / 문서 폴더에 plan.md 저장
+3. Save plan.md to document folder / 문서 폴더에 plan.md 저장
+   - Create `.claude-docs/` if no document folder exists / 폴더 없으면 `.claude-docs/` 생성
 
 ### Output format / 출력 형식:
 ```
@@ -119,7 +119,7 @@ Total: 12 tasks created / 총 12개 태스크 생성
 Adds Phases/tasks to existing plan.md.
 기존 plan.md에 Phase/태스크를 추가합니다.
 
-**Invokes plan-generator Agent. / plan-generator Agent를 호출합니다.**
+**Follows plan-generator rules below. / 아래 plan-generator 규칙을 따릅니다.**
 
 ### Syntax / 구문:
 ```
@@ -136,14 +136,13 @@ Adds Phases/tasks to existing plan.md.
 ```
 
 ### Steps / 수행 단계:
-1. Invoke plan-generator Agent / plan-generator Agent 호출
-2. Analyze existing plan.md / 기존 plan.md 분석
-3. Add tasks per request / 요청에 따라 태스크 추가:
+1. Read and analyze existing plan.md / 기존 plan.md 분석
+2. Determine placement / 배치 결정:
    - Phase specified: add to that Phase / Phase 지정 시: 해당 Phase에 추가
    - No Phase specified: auto-place / Phase 미지정 시: 적절한 Phase에 자동 배치
    - New Phase requested: create section / 새 Phase 요청 시: 새 Phase 섹션 생성
-4. Auto-assign IDs (continuing from existing) / ID 자동 부여
-5. Update plan.md / plan.md 업데이트
+3. Auto-assign IDs (continuing from existing) / ID 자동 부여 (기존 ID 이어서)
+4. Update plan.md / plan.md 업데이트
 
 ### Output format / 출력 형식:
 ```
@@ -167,7 +166,7 @@ Adds Phases/tasks to existing plan.md.
 Edits a specific Phase.
 특정 Phase를 수정합니다.
 
-**Invokes plan-generator Agent. / plan-generator Agent를 호출합니다.**
+**Follows plan-generator rules below. / 아래 plan-generator 규칙을 따릅니다.**
 
 ### Syntax / 구문:
 ```
@@ -176,7 +175,7 @@ Edits a specific Phase.
 ```
 
 ### Steps / 수행 단계:
-1. Invoke plan-generator Agent / plan-generator Agent 호출
+1. Identify target Phase / 대상 Phase 식별
 2. Display Phase contents / 해당 Phase 내용 표시
 3. AskUserQuestion for edit request / 수정 요청 입력 받기
 4. Apply edits and save / 수정 적용 후 저장
@@ -236,12 +235,6 @@ After edit / 수정 후:
 [...]
 ```
 
-### Key Rules / 핵심 규칙
-1. **IDs required** - All tasks get `N.M` format ID / 모든 태스크에 `N.M` 형식 ID 부여
-2. **Checklist format** - Standard markdown `- [ ]` / 표준 마크다운 사용
-3. **Phase heading** - `### Phase N:` format / `### Phase N:` 형식 유지
-4. **Date management** - Auto-update created/modified dates / 생성일/수정일 자동 갱신
-
 ---
 
 ## Plan File Search Order / plan 파일 탐색 순서
@@ -254,33 +247,130 @@ After edit / 수정 후:
 
 ---
 
-## Agent Instructions / Agent 지시사항
+## Plan Generator Rules / plan-generator 규칙
 
-### Context to pass to plan-generator Agent / Agent 호출 시 전달할 컨텍스트:
+These rules apply to `create`, `add`, and `edit` commands.
+아래 규칙은 `create`, `add`, `edit` 명령어에 적용됩니다.
 
-```
-Command: {create|add|edit}
-Request: {user input}
-Project root: {CWD or git root}
-Document folder: {detected document folder path}
-Existing plan.md: {full content if exists}
-```
+### Common Rules / 공통 규칙
 
-### plan-generator Agent roles / Agent 역할:
-1. `create`: Analyze request → generate full plan.md / 요청 분석 → plan.md 전체 생성
-2. `add`: Analyze existing plan.md → add tasks/Phases / 기존 분석 → 태스크/Phase 추가
-3. `edit`: Display Phase → get user input → apply edits / Phase 표시 → 입력 받기 → 수정 적용
+1. **ID system / ID 체계**: All tasks get `N.M` format ID / 모든 태스크에 `N.M` 형식 ID 부여
+   - N: Phase number (1, 2, 3...) / Phase 번호
+   - M: Task sequence within Phase (1, 2, 3...) / Phase 내 태스크 순번
+   - Example / 예: 1.1, 1.2, 2.1, 2.2...
+
+2. **Checklist format / 체크리스트 형식**: Standard markdown `- [ ]` / 표준 마크다운 사용
+   ```markdown
+   - [ ] 1.1 Task description
+   - [ ] 1.2 Task description
+   ```
+
+3. **Phase heading / Phase 헤딩**: `### Phase N:` format / `### Phase N:` 형식 유지
+   ```markdown
+   ### Phase 1: MVP
+   ### Phase 2: Core Features
+   ```
+
+4. **Date management / 날짜 관리**:
+   - `**Created:**` - Set on initial creation / 최초 생성 시 설정
+   - `**Last Updated:**` - Update on every modification / 수정마다 갱신
+
+### create: Generate New plan.md / 새 plan.md 생성
+
+1. **Analyze request / 요청 분석**:
+   - Identify app/service type / 앱/서비스 종류 파악
+   - Extract requested features / 요청된 기능 추출
+   - Determine Phase count (default 3~5 if not specified) / Phase 수 확인
+
+2. **Generate plan.md / plan.md 생성**:
+   - Write project overview / 프로젝트 개요 작성
+   - Compose Phase-based tasks / Phase별 태스크 구성
+   - Arrange in logical order (MVP → Core → Advanced) / 논리적 순서 배치
+
+3. **Save file / 파일 저장**:
+   - Save to document folder / 문서 폴더에 저장
+   - Create `.claude-docs/` if no folder exists / 폴더 없으면 생성
+
+### add: Add Tasks/Phases / 태스크/Phase 추가
+
+1. **Analyze existing plan.md / 기존 plan.md 분석**:
+   - Understand current Phase structure / 현재 Phase 구조 파악
+   - Find last task ID / 마지막 태스크 ID 확인
+
+2. **Determine placement / 배치 결정**:
+   - Phase specified: add to that Phase / Phase 지정 시: 해당 Phase에 추가
+   - No Phase specified: choose most appropriate Phase / Phase 미지정 시: 적절한 Phase 선택
+   - New Phase requested: create new Phase section / 새 Phase 요청 시: 새 섹션 생성
+
+3. **Assign IDs / ID 부여**:
+   - Continue numbering from existing / 기존 ID 이어서 번호 부여
+   - Example: if Phase 2 has up to 2.5, new tasks start at 2.6
+
+4. **Update plan.md / plan.md 업데이트**:
+   - Insert tasks at appropriate position / 적절한 위치에 태스크 추가
+   - Update Last Updated date / 최종 수정일 갱신
+
+### edit: Modify Phase / Phase 수정
+
+1. **Identify target Phase / 대상 Phase 식별**:
+   - Find by "Phase N" or Phase name / "Phase N" 또는 Phase명으로 찾기
+
+2. **Display current state / 현재 상태 표시**
+
+3. **Get edit request / 수정 요청 받기**:
+   - Use AskUserQuestion tool / AskUserQuestion 도구 사용
+
+4. **Apply edits / 수정 적용**:
+   - Delete: remove specified tasks / 삭제: 해당 태스크 제거
+   - Add: assign new IDs / 추가: 새 ID로 태스크 추가
+   - Modify: change task text / 수정: 태스크 텍스트 변경
+
+### Phase Structure Guidelines / Phase 구성 가이드라인
+
+**Typical Phase structure / 일반적인 Phase 구조:**
+
+| Phase | Name | Content |
+|-------|------|---------|
+| 1 | MVP | Minimum viable product, core features only / 최소 동작 버전 |
+| 2 | Core Features | Main feature implementation / 주요 기능 구현 |
+| 3 | Enhancement | Additional features, UX improvements / 부가 기능, UX 개선 |
+| 4 | Monetization | Ads, payments, subscriptions / 광고, 결제, 구독 |
+| 5 | Polish | Optimization, bug fixes, launch prep / 최적화, 런칭 준비 |
+
+**By app type / 앱 유형별:**
+
+Mobile app:
+- Phase 1: Basic UI + core features
+- Phase 2: Data storage + additional screens
+- Phase 3: Notifications + settings
+- Phase 4: Ads + IAP
+- Phase 5: i18n + optimization
+
+Web service:
+- Phase 1: Landing + core features
+- Phase 2: Auth + dashboard
+- Phase 3: Notifications + analytics
+- Phase 4: Payments + subscriptions
+- Phase 5: SEO + performance
+
+### Important Notes / 주의사항
+
+1. **Preserve existing IDs** - Never change existing task IDs / 기존 태스크 ID 변경 불가
+2. **Maintain order** - Tasks in logical sequence / 태스크는 논리적 순서로 배치
+3. **Specific tasks** - "Implement login screen" not "Implement screen" / 구체적으로 작성
+4. **Appropriate size** - Each task completable in 1~4 hours / 적절한 크기로 분할
+5. **Consider dependencies** - Order tasks by prerequisites / 선행 태스크 고려
 
 ---
 
 ## Command Reference / 명령어 정리
 
-| Command | Action | Agent | Purpose |
-|---------|--------|-------|---------|
-| `/plan` | Summary / 현황 요약 | No | Check plan.md status / 상태 확인 |
-| `/plan create` | Create plan.md / 생성 | Yes | Start project / 프로젝트 시작 |
-| `/plan add` | Add tasks / 추가 | Yes | Add features / 기능 추가 |
-| `/plan edit` | Edit Phase / 수정 | Yes | Change plan / 기획 변경 |
+| Command | Action | Purpose |
+|---------|--------|---------|
+| `/plan` | Summary / 현황 요약 | Check plan.md status / 상태 확인 |
+| `/plan create` | Create plan.md / 생성 | Start project / 프로젝트 시작 |
+| `/plan add` | Add tasks / 추가 | Add features / 기능 추가 |
+| `/plan edit` | Edit Phase / 수정 | Change plan / 기획 변경 |
 
 ---
 

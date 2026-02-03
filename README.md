@@ -105,6 +105,37 @@ Designed for AI coding agents that support markdown-based skills:
 - **GitHub Copilot**
 - Any agent supporting `SKILL.md` format
 
+## Advanced Setup (Optional) / 고급 설정 (선택)
+
+Each skill package includes standalone agent files (`plan-generator.md`, `task-tracker.md`).
+These are **not required** -- all logic is already embedded in `SKILL.md` files.
+
+각 스킬 패키지에 standalone agent 파일이 포함되어 있습니다.
+이 파일들은 **필수가 아닙니다** -- 모든 로직이 이미 SKILL.md에 내장되어 있습니다.
+
+If you want to use them as subagents via Claude Code's Task tool:
+Claude Code의 Task 도구로 subagent로 사용하려면:
+
+```bash
+# Copy agent files to ~/.claude/agents/
+cp ~/.agents/skills/plan/plan-generator.md ~/.claude/agents/
+cp ~/.agents/skills/task/task-tracker.md ~/.claude/agents/
+```
+
+### Installed File Structure / 설치 파일 구조
+
+```
+~/.agents/skills/
+├── plan/
+│   ├── SKILL.md              # Skill definition (self-contained)
+│   └── plan-generator.md     # Optional standalone agent
+├── task/
+│   ├── SKILL.md              # Skill definition (self-contained)
+│   └── task-tracker.md       # Optional standalone agent
+└── fix/
+    └── SKILL.md              # Skill definition (no agent needed)
+```
+
 ## Bilingual Support / 이중언어 지원
 
 All output messages are bilingual (English / Korean).

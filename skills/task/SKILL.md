@@ -18,8 +18,8 @@ plan.md를 기반으로 task.md를 생성하고 진행률을 추적합니다.
 /task summary      # Summary / 현황 요약
 /task generate     # Generate task.md / task.md 생성
 /task update       # Update progress / 진행률 업데이트
-/task done         # Mark done / 완료 처리 (Agent)
-/task verify       # Verify implementation / 구현 검증 (Agent)
+/task done         # Mark done / 완료 처리
+/task verify       # Verify implementation / 구현 검증
 /task diff         # Preview changes / plan.md ↔ task.md 변경사항 미리보기
 /task sync         # Sync from plan / plan.md 수정 후 task.md 동기화
 ```
@@ -40,19 +40,26 @@ The first argument determines the command: `$ARGUMENTS`
 3. `docs/`
 4. CWD (project root / 프로젝트 루트)
 
+### task.md search order / task.md 탐색 순서:
+1. `.claude-docs/task.md`
+2. `.claude/docs/task.md`
+3. `docs/task.md`
+4. `TASKS.md`
+5. `task.md`
+
+### plan.md search order / plan.md 탐색 순서:
+1. `.claude-docs/plan.md`
+2. `.claude/docs/plan.md`
+3. `docs/plan.md`
+4. `PLAN.md`
+5. `plan.md`
+
 ---
 
 ## Command: generate
 
 Generates task.md from plan document.
 plan 문서에서 task.md를 생성합니다.
-
-### Plan file search order / plan 파일 탐색 순서:
-1. `.claude-docs/plan.md`
-2. `.claude/docs/plan.md`
-3. `docs/plan.md`
-4. `PLAN.md`
-5. `plan.md`
 
 ### Task extraction rules / 태스크 추출 규칙:
 
@@ -192,20 +199,57 @@ Creates `.claude-docs/` automatically if no document folder exists.
 Auto-detects completed tasks from current session and updates task.md.
 현재 세션에서 완료된 태스크를 자동 감지하여 task.md를 업데이트합니다.
 
-**Invokes task-tracker Agent. / task-tracker Agent를 호출합니다.**
+**Follows task-tracker rules below. / 아래 task-tracker 규칙을 따릅니다.**
 
 ### Steps / 수행 단계:
-1. Invoke task-tracker Agent / task-tracker Agent 호출
-2. Analyze conversation (Edit/Write tool history) / 대화 내용 분석
-3. Identify completed tasks / 완료된 태스크 식별
-4. Update task.md (`[ ]` → `[x]`) / task.md 업데이트
-5. Recalculate Progress Overview / Progress Overview 테이블 재계산
-6. Update Last Updated date / 날짜 갱신
+
+1. **Find task.md / task.md 파일 찾기**
+   - Search in order: `.claude-docs/task.md` → `.claude/docs/task.md` → `docs/task.md` → `TASKS.md` → `task.md`
+   - If not found, output error message / 파일이 없으면 에러 메시지 출력
+
+2. **Analyze current conversation / 현재 대화에서 구현된 기능 파악**
+   - Check Edit/Write tool usage history / Edit/Write 도구 사용 이력 확인
+   - Analyze code changes / 코드 변경 내용 분석
+   - Check for completion mentions ("done", "completed", "구현 완료") / 완료 언급 확인
+
+3. **Match to tasks / 해당하는 태스크 찾기**
+   - Match against `- [ ]` incomplete tasks / 미완료 태스크 중 매칭
+   - Compare task names with implemented features / 태스크명과 구현 내용 비교
+   - **Exact matching only** - Mark complete only when task name clearly matches implementation / 태스크명과 구현 내용이 명확히 일치할 때만 완료 처리
+   - **Conservative judgment** - Do not mark if uncertain / 불확실한 경우 완료 처리하지 않음
+
+4. **Mark tasks complete / 태스크 완료 처리**
+   - Change `[ ]` → `[x]` for matched tasks / 매칭된 태스크만 변경
+   - Edit only the exact matching lines / 해당 라인만 정확히 수정
+   - Multiple tasks can be marked at once / 한 번에 여러 태스크 완료 가능
+
+5. **Update Progress Overview table / Progress Overview 테이블 업데이트**
+   - Recalculate completed/total count per Phase / Phase별 완료/전체 카운트 재계산
+   - Update percentages / 퍼센트 업데이트
+   - Update Phase Status:
+     - All incomplete: `pending` / 모든 태스크 미완료
+     - Some complete: `in-progress` / 일부 완료
+     - All complete: `completed` / 모두 완료
+
+6. **Update Last Updated date / 날짜 갱신**
 
 ### Output format / 출력 형식:
 ```
 ✅ Done / 완료: [Task name]
 📊 Progress / 진행률: Phase N - X/Y (Z%)
+
+task.md updated / 업데이트 완료
+```
+
+Multiple tasks / 여러 태스크 완료 시:
+```
+✅ Done / 완료:
+- [Task name 1]
+- [Task name 2]
+
+📊 Progress / 진행률:
+- Phase N: X/Y (Z%)
+- Overall / 전체: A/B (C%)
 
 task.md updated / 업데이트 완료
 ```
@@ -222,6 +266,10 @@ Claude:
   task.md updated / 업데이트 완료
 ```
 
+### Important notes / 주의사항:
+- **No undo** - `[x]` → `[ ]` changes must be done manually / 되돌리기는 수동으로만 가능
+- **Conservative** - When in doubt, do NOT mark as complete / 불확실하면 완료 처리하지 않음
+
 ---
 
 ## Command: verify
@@ -229,18 +277,26 @@ Claude:
 Compares plan.md requirements against actual code implementation.
 plan.md와 실제 코드를 비교하여 구현 상태를 검증합니다.
 
-**Invokes task-tracker Agent. / task-tracker Agent를 호출합니다.**
+**Follows task-tracker rules below. / 아래 task-tracker 규칙을 따릅니다.**
 
 ### Steps / 수행 단계:
-1. Invoke task-tracker Agent / task-tracker Agent 호출
-2. Extract plan.md requirements / plan.md 요구사항 추출
-3. Inspect code files (Glob, Grep, Read) / 코드 파일 검사
-4. Report implementation status / 구현 상태 보고
 
-### Verification criteria / 검증 기준:
-- ✅ Completed / 완료: File exists + core logic implemented / 파일 존재 + 핵심 로직 구현
-- 🔄 In Progress / 진행중: File exists but partial / 파일 존재하지만 일부만 구현
-- ❌ Not Started / 미시작: No file or empty / 파일 없음 또는 빈 구현
+1. **Read plan.md / plan.md 읽기**
+   - Search in order: `.claude-docs/plan.md` → `.claude/docs/plan.md` → `docs/plan.md` → `PLAN.md` → `plan.md`
+
+2. **Extract tasks from current Phase / 현재 Phase의 태스크 목록 추출**
+   - Find Phase with `in-progress` status / `in-progress` 상태인 Phase 찾기
+   - Extract `- [ ]` and `- [x]` items / 해당 Phase의 체크리스트 항목 추출
+
+3. **Inspect actual code files / 실제 코드 파일 확인**
+   - **Glob**: Check if related files exist / 관련 파일 존재 여부
+   - **Grep**: Verify core functions/classes are implemented / 핵심 함수/클래스 구현 여부
+   - **Read**: Check detailed implementation / 상세 구현 확인
+
+4. **Determine implementation status / 구현 상태 판단**
+   - ✅ Completed / 완료: File exists + core logic implemented / 파일 존재 + 핵심 로직 구현됨
+   - 🔄 In Progress / 진행중: File exists but partial / 파일 존재하지만 일부만 구현
+   - ❌ Not Started / 미시작: No file or empty / 파일 없음 또는 빈 구현
 
 ### Output format / 출력 형식:
 ```
@@ -365,16 +421,16 @@ Completed tasks removed due to plan changes.
 
 ## Command Reference / 명령어 비교
 
-| Command | Action | Agent | Purpose |
-|---------|--------|-------|---------|
-| `/task` | Summary / 현황 요약 | No | Quick status check / 빠른 상태 확인 |
-| `/task summary` | Summary / 현황 요약 | No | Quick status check / 빠른 상태 확인 |
-| `/task generate` | Generate task.md / 생성 | No | Initial setup / 최초 설정 |
-| `/task update` | Recalculate progress / 진행률 재계산 | No | After manual checks / 수동 체크 후 |
-| `/task done` | Mark complete / 완료 처리 | Yes | After development / 개발 완료 후 |
-| `/task verify` | Verify implementation / 구현 검증 | Yes | Code vs plan / 코드 vs 계획 비교 |
-| `/task diff` | Preview changes / 변경 미리보기 | No | Before sync / 동기화 전 확인 |
-| `/task sync` | Sync execution / 동기화 실행 | No | After plan edit / 기획서 수정 후 |
+| Command | Action | Purpose |
+|---------|--------|---------|
+| `/task` | Summary / 현황 요약 | Quick status check / 빠른 상태 확인 |
+| `/task summary` | Summary / 현황 요약 | Quick status check / 빠른 상태 확인 |
+| `/task generate` | Generate task.md / 생성 | Initial setup / 최초 설정 |
+| `/task update` | Recalculate progress / 진행률 재계산 | After manual checks / 수동 체크 후 |
+| `/task done` | Mark complete / 완료 처리 | After development / 개발 완료 후 |
+| `/task verify` | Verify implementation / 구현 검증 | Code vs plan / 코드 vs 계획 비교 |
+| `/task diff` | Preview changes / 변경 미리보기 | Before sync / 동기화 전 확인 |
+| `/task sync` | Sync execution / 동기화 실행 | After plan edit / 기획서 수정 후 |
 
 ---
 
