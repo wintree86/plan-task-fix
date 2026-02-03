@@ -15,12 +15,12 @@
 
 ```bash
 # Install all 3 skills / 전체 설치
-npx skills add <owner>/plan-task-fix
+npx skills add wintree86/plan-task-fix
 
 # Install individual skill / 개별 설치
-npx skills add <owner>/plan-task-fix --skill plan
-npx skills add <owner>/plan-task-fix --skill task
-npx skills add <owner>/plan-task-fix --skill fix
+npx skills add wintree86/plan-task-fix --skill plan
+npx skills add wintree86/plan-task-fix --skill task
+npx skills add wintree86/plan-task-fix --skill fix
 ```
 
 ## Workflow / 워크플로우
