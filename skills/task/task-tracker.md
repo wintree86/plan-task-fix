@@ -1,7 +1,7 @@
 ---
 name: task-tracker
-description: Analyze conversation to track task completion. Automatically updates task.md when features are implemented. Use when user says "/task done" or "/task verify".
-tools: Read, Edit, Grep, Glob
+description: Analyze conversation to track task completion and execute session wrap-ups. Automatically updates plan.md when features are implemented. Use when user says "/task done", "/task verify", or "/task wrap".
+tools: Read, Edit, Write, Grep, Glob
 model: haiku
 ---
 
@@ -22,13 +22,6 @@ model: haiku
 
 ## 프로젝트 문서 탐색
 
-### task.md 탐색 순서:
-1. `.claude-docs/task.md`
-2. `.claude/docs/task.md`
-3. `docs/task.md`
-4. `TASKS.md`
-5. `task.md`
-
 ### plan.md 탐색 순서:
 1. `.claude-docs/plan.md`
 2. `.claude/docs/plan.md`
@@ -40,11 +33,11 @@ model: haiku
 
 ## /task done 호출 시
 
-대화에서 구현된 기능을 분석하여 task.md를 업데이트합니다.
+대화에서 구현된 기능을 분석하여 plan.md를 업데이트합니다.
 
 ### 수행 단계:
 
-1. **task.md 파일 찾기**
+1. **plan.md 파일 찾기**
    - 위 탐색 순서대로 파일 확인
    - 파일이 없으면 에러 메시지 출력
 
@@ -76,7 +69,7 @@ model: haiku
 ✅ 완료: [태스크명]
 📊 진행률: Phase N - X/Y (Z%)
 
-task.md 업데이트 완료
+plan.md 업데이트 완료
 ```
 
 여러 태스크 완료 시:
@@ -89,7 +82,7 @@ task.md 업데이트 완료
 - Phase N: X/Y (Z%)
 - 전체: A/B (C%)
 
-task.md 업데이트 완료
+plan.md 업데이트 완료
 ```
 
 ---
@@ -139,7 +132,21 @@ plan.md 요구사항과 실제 코드를 비교하여 구현 상태를 검증합
 
 ## 주의사항
 
-1. **정확한 매칭** - 태스크명과 구현 내용이 명확히 일치할 때만 완료 처리
-2. **보수적 판단** - 불확실한 경우 완료 처리하지 않음
 3. **다중 태스크** - 한 번에 여러 태스크 완료 가능
 4. **되돌리기 없음** - `[x]` → `[ ]` 변경은 수동으로만 가능
+
+---
+
+## /task wrap 호출 시 (세션 랩업 파이프라인)
+
+현재 코딩 세션을 마무리하고 컨텍스트 메모리를 최적화하며 다음 목표를 제안하는 2단계 멀티 에이전트 파이프라인을 실행합니다.
+
+### 2단계 파이프라인 구조 (2-Phase Pipeline):
+
+1. **Phase 1: 병렬 분석 (Parallel Analysis)**
+   - 4개의 특화된 서브 에이전트(`progress-analyzer`, `context-archiver`, `knowledge-extractor`, `next-planner`)가 동시에 백그라운드 분석을 수행합니다.
+   
+2. **Phase 2: 취합 및 사용자 승인 (Sequential Validation)**
+   - `wrap-coordinator` 에이전트가 Phase 1의 결과를 종합하여 최종 리포트를 생성합니다.
+   - 사용자에게 요약 리포트를 바탕으로 `plan.md`, `archive.md`, `knowledge.md` 업데이트에 대한 승인을 요청합니다.
+   - **사용자가 승인하면** 변경 사항을 각 파일에 반영합니다.

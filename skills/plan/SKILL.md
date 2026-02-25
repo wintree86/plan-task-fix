@@ -109,7 +109,7 @@ Creates a new plan.md.
 Total: 12 tasks created / 총 12개 태스크 생성
 📍 Saved / 저장: .claude-docs/plan.md
 
-💡 Next step / 다음 단계: /task generate
+💡 Next step / 다음 단계: /task summary
 ```
 
 ---
@@ -156,7 +156,7 @@ Adds Phases/tasks to existing plan.md.
 📍 Phase 2: Core Features
    5 → 8 tasks / 5개 → 8개 태스크
 
-💡 Next step / 다음 단계: /task sync
+💡 Next step / 다음 단계: /task update
 ```
 
 ---
@@ -219,15 +219,26 @@ After edit / 수정 후:
 
 ---
 
+## Progress Overview
+
+| Phase | Name | Status | Progress |
+|-------|------|--------|----------|
+| 1 | {Phase Name} | pending | 0/3 (0%) |
+| 2 | {Phase Name} | pending | 0/2 (0%) |
+
+---
+
 ## Development Plan
 
 ### Phase 1: {Phase Name}
+**Status:** pending
 
 - [ ] 1.1 {Task}
 - [ ] 1.2 {Task}
 - [ ] 1.3 {Task}
 
 ### Phase 2: {Phase Name}
+**Status:** pending
 
 - [ ] 2.1 {Task}
 - [ ] 2.2 {Task}
@@ -377,15 +388,15 @@ Web service:
 ## Integration with `/task` / `/task` 스킬과 연계
 
 ```
-/plan create "My App"       → plan.md created / 생성
-        ↓
-/task generate              → task.md created / 생성
+/plan create "My App"       → plan.md created / 생성 (진행률 테이블 포함)
         ↓
 [Development / 개발 진행]
         ↓
-/plan add "New feature"     → plan.md updated / 태스크 추가
+/task done                  → plan.md updated / 완료 처리 및 진행률 갱신
         ↓
-/task sync                  → task.md synced / 동기화 (completed status preserved / 완료 상태 유지)
+/plan add "New feature"     → plan.md updated / 새 기능 기획 추가
+        ↓
+/task update                → plan.md updated / 전체 테이블 및 진행률 갱신
 ```
 
 ---
@@ -394,7 +405,7 @@ Web service:
 
 Part of the **plan-task-fix** suite:
 - `/plan` - Plan document management (plan.md) / 기획서 관리
-- `/task` - Task tracking and progress (task.md) / 태스크 추적
+- `/task` - Task tracking and progress (plan.md) / 태스크 추적
 - `/fix` - Bug/improvement backlog (backlog.md) / 백로그 관리
 
 Install: `npx skills add wintree86/plan-task-fix`

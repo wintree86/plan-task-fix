@@ -1,27 +1,25 @@
 ---
 name: task
 description: >
-  Task tracker -- generate task.md from plan, track progress, verify implementation.
-  범용 프로젝트 태스크 관리. plan 문서에서 task.md 생성, 진행률 추적, 현황 요약.
+  Task tracker -- track progress and verify implementation directly on plan.md.
+  범용 프로젝트 태스크 관리. plan 문서에서 진행률 추적, 현황 요약.
   Triggers: /task, "task", "태스크", "progress", "진행률", "진행 상황"
 ---
 
 # Task Manager
 
-Track tasks from plan.md, manage progress, verify implementation.
-plan.md를 기반으로 task.md를 생성하고 진행률을 추적합니다.
+Track tasks, manage progress, and verify implementation directly on plan.md.
+plan.md를 기반으로 태스크 진행률을 추적합니다.
 
 ## Usage / 사용법
 
 ```
 /task              # Summary / 현황 요약 (default)
 /task summary      # Summary / 현황 요약
-/task generate     # Generate task.md / task.md 생성
 /task update       # Update progress / 진행률 업데이트
 /task done         # Mark done / 완료 처리
 /task verify       # Verify implementation / 구현 검증
-/task diff         # Preview changes / plan.md ↔ task.md 변경사항 미리보기
-/task sync         # Sync from plan / plan.md 수정 후 task.md 동기화
+/task wrap         # Wrap-up session / 세션 랩업 파이프라인 작동
 ```
 
 The first argument determines the command: `$ARGUMENTS`
@@ -40,13 +38,6 @@ The first argument determines the command: `$ARGUMENTS`
 3. `docs/`
 4. CWD (project root / 프로젝트 루트)
 
-### task.md search order / task.md 탐색 순서:
-1. `.claude-docs/task.md`
-2. `.claude/docs/task.md`
-3. `docs/task.md`
-4. `TASKS.md`
-5. `task.md`
-
 ### plan.md search order / plan.md 탐색 순서:
 1. `.claude-docs/plan.md`
 2. `.claude/docs/plan.md`
@@ -56,64 +47,13 @@ The first argument determines the command: `$ARGUMENTS`
 
 ---
 
-## Command: generate
-
-Generates task.md from plan document.
-plan 문서에서 task.md를 생성합니다.
-
-### Task extraction rules / 태스크 추출 규칙:
-
-**Checklist pattern detection / 체크리스트 패턴 자동 감지:**
-- `- [ ]` incomplete task / 미완료 태스크
-- `- [x]` completed task / 완료된 태스크
-
-**Phase heading detection / Phase/단계 헤딩 자동 파싱:**
-- `## Phase N:`, `### Phase N:`
-- `## Step N:`, `### Step N:`
-- `## N.`, `### N.` (headings starting with number / 숫자로 시작하는 헤딩)
-
-### Steps / 수행 단계:
-1. Search and read plan file / plan 파일 탐색 및 읽기
-2. Extract sections with checklist patterns / 체크리스트 패턴이 있는 섹션 추출
-3. Group tasks by Phase / Phase/단계별로 태스크 그룹화
-4. Create `task.md` in document folder / 문서 폴더에 `task.md` 생성
-
-### Generated task.md format / 생성되는 task.md 형식:
-```markdown
-# {Project Name} Task List
-
-**Last Updated:** YYYY-MM-DD
-
-## Progress Overview
-
-| Phase | Name | Status | Progress |
-|-------|------|--------|----------|
-| 1 | MVP | pending | 0/5 (0%) |
-| 2 | Core Features | pending | 0/5 (0%) |
-...
-
-## Phase 1: MVP
-**Status:** pending
-
-- [ ] Task 1
-- [ ] Task 2
-
-## Phase 2: Core Features
-**Status:** pending
-
-- [ ] Task 3
-- [ ] Task 4
-```
-
----
-
 ## Command: update
 
-Updates task.md progress.
-task.md의 진행률을 업데이트합니다.
+Updates plan.md progress.
+plan.md의 진행률을 업데이트합니다.
 
 ### Steps / 수행 단계:
-1. Read task.md / task.md 파일 읽기
+1. Read plan.md / plan.md 파일 읽기
 2. Count checked items `[x]` / 체크된 항목 카운트
 3. Update Progress Overview table / Progress Overview 테이블 업데이트
 4. Update Phase Status / Phase Status 업데이트:
@@ -175,8 +115,7 @@ Phase 3: Advanced ⏳ Pending / 대기 (0/4)
 
 | File | Default Location | Description |
 |------|-----------------|-------------|
-| plan.md | document folder | Source plan / 원본 기획서 |
-| task.md | document folder | Generated task list / 태스크 목록 |
+| plan.md | document folder | Source plan / 원본 문서 |
 | progress.md | document folder | Progress log / 진행 이력 |
 
 Creates `.claude-docs/` automatically if no document folder exists.
@@ -186,25 +125,23 @@ Creates `.claude-docs/` automatically if no document folder exists.
 
 ## Notes / 주의사항
 
-1. **Direct editing** - Change `[ ]` to `[x]` manually / task.md 직접 편집 가능
+1. **Direct editing** - Change `[ ]` to `[x]` manually / plan.md 직접 편집 가능
 2. **Update after changes** - Run `/task update` to refresh tables / 진행률 변경 후 테이블 갱신
 3. **plan.md format** - Requires checklist (`- [ ]`) patterns / 체크리스트 패턴 필요
-4. **Use sync after plan changes** - `/task generate` resets status; use `/task sync` instead / 기획서 수정 후에는 `/task sync` 사용
-5. **Auto-archive** - Deleted completed tasks are archived to archived.md / 완료된 태스크 삭제 시 archived.md에 보관
 
 ---
 
 ## Command: done
 
-Auto-detects completed tasks from current session and updates task.md.
-현재 세션에서 완료된 태스크를 자동 감지하여 task.md를 업데이트합니다.
+Auto-detects completed tasks from current session and updates plan.md.
+현재 세션에서 완료된 태스크를 자동 감지하여 plan.md를 업데이트합니다.
 
 **Follows task-tracker rules below. / 아래 task-tracker 규칙을 따릅니다.**
 
 ### Steps / 수행 단계:
 
-1. **Find task.md / task.md 파일 찾기**
-   - Search in order: `.claude-docs/task.md` → `.claude/docs/task.md` → `docs/task.md` → `TASKS.md` → `task.md`
+1. **Find plan.md / plan.md 파일 찾기**
+   - Search in order: `.claude-docs/plan.md` → `.claude/docs/plan.md` → `docs/plan.md` → `PLAN.md` → `plan.md`
    - If not found, output error message / 파일이 없으면 에러 메시지 출력
 
 2. **Analyze current conversation / 현재 대화에서 구현된 기능 파악**
@@ -238,7 +175,7 @@ Auto-detects completed tasks from current session and updates task.md.
 ✅ Done / 완료: [Task name]
 📊 Progress / 진행률: Phase N - X/Y (Z%)
 
-task.md updated / 업데이트 완료
+plan.md updated / 업데이트 완료
 ```
 
 Multiple tasks / 여러 태스크 완료 시:
@@ -251,7 +188,7 @@ Multiple tasks / 여러 태스크 완료 시:
 - Phase N: X/Y (Z%)
 - Overall / 전체: A/B (C%)
 
-task.md updated / 업데이트 완료
+plan.md updated / 업데이트 완료
 ```
 
 ### Example / 사용 예시:
@@ -263,7 +200,7 @@ Developer: "/task done"
 Claude:
   ✅ Done / 완료: 2.2 Three Card Selection
   📊 Phase 2: 1/6 (17%)
-  task.md updated / 업데이트 완료
+  plan.md updated / 업데이트 완료
 ```
 
 ### Important notes / 주의사항:
@@ -316,121 +253,41 @@ plan.md와 실제 코드를 비교하여 구현 상태를 검증합니다.
 
 ---
 
-## Command: diff
-
-Previews changes between plan.md and task.md before syncing.
-동기화 전 plan.md와 task.md의 변경사항을 미리보기합니다.
-
-### Steps / 수행 단계:
-1. Parse plan.md (extract Phases/tasks) / plan.md 파싱
-2. Parse task.md (current tasks and status) / task.md 파싱
-3. Compare and analyze / 두 파일 비교 분석
-4. Report changes / 변경사항 보고
-
-### Task matching criteria / 태스크 매칭 기준:
-1. **ID-based (priority)** - Match by `1.1`, `2.3` numbers / ID 번호로 정확히 매칭
-2. **Similarity-based (fallback)** - 70%+ text similarity / 텍스트 70% 이상 유사
-
-### Output format / 출력 형식:
-```
-📋 plan.md ↔ task.md Comparison / 비교
-
-➕ Added / 추가 (2):
-- 2.5 New feature
-- 3.1 Additional feature
-
-➖ Removed / 삭제 (1):
-- 2.3 Old feature [incomplete - removed / 미완료 - 삭제됨]
-
-✏️ Modified / 수정 (1):
-- 2.4 "Feature A" → "Feature A (improved)" [status preserved / 완료 상태 유지]
-
-🗄️ To Archive / 보관 예정 (1):
-- 1.3 Removed feature [completed - to archived.md / 완료됨 - archived.md로 이동]
-```
-
----
-
-## Command: sync
-
-Syncs task.md after plan.md changes. **Preserves completion status.**
-plan.md 수정 후 task.md를 동기화합니다. **기존 완료 상태가 유지됩니다.**
-
-### Steps / 수행 단계:
-1. Backup task.md → task.md.bak / 백업
-2. Parse plan.md (extract Phases/tasks) / plan.md 파싱
-3. Compare with task.md / task.md와 비교
-4. Apply changes / 변경사항 적용:
-   - New tasks: add as `- [ ]` / 새 태스크 추가
-   - Deleted incomplete: remove / 삭제된 미완료 태스크 삭제
-   - Deleted completed: **move to archived.md** / 삭제된 완료 태스크 archived.md로 이동
-   - Modified: update text only, preserve status / 텍스트만 업데이트, 상태 유지
-5. Recalculate Progress Overview / 테이블 재계산
-6. Update Last Updated / 날짜 갱신
-
-### Task matching criteria / 태스크 매칭 기준:
-1. **ID-based (priority)** - Match by number / ID 번호로 매칭
-2. **Similarity-based (fallback)** - 70%+ text match / 텍스트 70% 이상 유사
-
-### Output format / 출력 형식:
-```
-🔄 Synced / 동기화 완료
-
-➕ Added / 추가: 2
-➖ Removed / 삭제: 1
-✏️ Modified / 수정: 1
-🗄️ Archived / 보관: 1
-
-📊 Progress / 진행률: 8/12 (67%)
-💾 Backup / 백업: task.md.bak
-```
-
-### archived.md format / archived.md 형식:
-Preserves deleted completed tasks as a log.
-삭제되었지만 완료된 태스크를 로그 형태로 보관합니다.
-
-```markdown
-# Archived Tasks Log
-
-Completed tasks removed due to plan changes.
-기획 변경으로 삭제된 완료 태스크 이력.
-
----
-
-## YYYY-MM-DD
-**Sync reason / 동기화 사유**: Phase N plan change / 기획 변경
-
-| Phase | Task | Completed / 완료일 | Reason / 삭제 사유 |
-|-------|------|-------------------|-------------------|
-| 1 | 1.3 Removed feature | 2026-01-15 | Plan change / 기획 변경 |
-```
-
-### Usage example / 사용 예시:
-```
-# 1. Preview changes after editing plan.md
-/task diff
-
-# 2. Apply sync
-/task sync
-
-# 3. Check result
-/task
-```
-
----
-
 ## Command Reference / 명령어 비교
 
 | Command | Action | Purpose |
 |---------|--------|---------|
 | `/task` | Summary / 현황 요약 | Quick status check / 빠른 상태 확인 |
 | `/task summary` | Summary / 현황 요약 | Quick status check / 빠른 상태 확인 |
-| `/task generate` | Generate task.md / 생성 | Initial setup / 최초 설정 |
 | `/task update` | Recalculate progress / 진행률 재계산 | After manual checks / 수동 체크 후 |
 | `/task done` | Mark complete / 완료 처리 | After development / 개발 완료 후 |
 | `/task verify` | Verify implementation / 구현 검증 | Code vs plan / 코드 vs 계획 비교 |
-| `/task diff` | Preview changes / 변경 미리보기 | Before sync / 동기화 전 확인 |
-| `/task sync` | Sync execution / 동기화 실행 | After plan edit / 기획서 수정 후 |
+| `/task wrap` | Session Wrap-up / 세션 랩업 | After coding session / 코딩 세션 종료 후 |
+
+---
+
+## Command: wrap
+
+Executes a 2-phase pipeline to wrap up the current coding session, optimizing context and generating follow-up priorities.
+현재 코딩 세션을 마무리하고 컨텍스트 메모리를 최적화하며 다음 목표를 제안하는 2단계 파이프라인을 실행합니다.
+
+### 2-Phase Pipeline Architecture / 2단계 파이프라인 구조
+
+#### Phase 1: Parallel Analysis / 병렬 분석
+Run the following 4 subagents in parallel using the `RunCommand` tool (e.g., `claude -p skills/task/agents/xxx.md` or invoke them via internal subagent mechanics).
+아래 4개의 서브 에이전트를 병렬로 실행하여 결과를 취합합니다.
+
+1. **`progress-analyzer`**: Validates code against plan.md / 실제 코드 구현 검증.
+2. **`context-archiver`**: Prepares completed Phase for archiving / 완료된 Phase 압축 준비.
+3. **`knowledge-extractor`**: Extracts TILs and gotchas / 배운 점 및 에러 해결책 추출.
+4. **`next-planner`**: Suggests top 3 next tasks / 다음 세션 최우선 태스크 3개 제안.
+
+#### Phase 2: Sequential Validation & Approval / 순차적 검증 및 승인
+1. **`wrap-coordinator`**: Aggregates Phase 1 results, presents a unified report to the user, and asks for execution confirmation. / Phase 1 결과를 취합하여 리포팅하고 사용자의 승인을 받습니다.
+2. IF User approves / 승인 시:
+   - Updates `plan.md` (clears completed details)
+   - Appends to `archive.md`
+   - Appends to `knowledge.md`
 
 ---
 
@@ -438,7 +295,7 @@ Completed tasks removed due to plan changes.
 
 Part of the **plan-task-fix** suite:
 - `/plan` - Plan document management (plan.md) / 기획서 관리
-- `/task` - Task tracking and progress (task.md) / 태스크 추적
+- `/task` - Task tracking and progress (plan.md) / 태스크 추적
 - `/fix` - Bug/improvement backlog (backlog.md) / 백로그 관리
 
 Install: `npx skills add wintree86/plan-task-fix`

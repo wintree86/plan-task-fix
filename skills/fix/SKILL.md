@@ -327,7 +327,7 @@ backlog.md가 없을 때 첫 항목 등록 시 자동 생성합니다.
 
 ```
 /plan  →  plan.md    (Feature planning / 기능 기획)
-/task  →  task.md    (Task tracking / 태스크 추적)
+/task  →  plan.md    (Task progress tracking / 기획서 내 진행률 추적)
 /fix   →  backlog.md (Bugs/fixes/improvements / 버그/수정/개선)
 ```
 
@@ -355,7 +355,7 @@ backlog.md가 없을 때 첫 항목 등록 시 자동 생성합니다.
 
 Part of the **plan-task-fix** suite:
 - `/plan` - Plan document management (plan.md) / 기획서 관리
-- `/task` - Task tracking and progress (task.md) / 태스크 추적
+- `/task` - Task tracking and progress (plan.md) / 태스크 추적
 - `/fix` - Bug/improvement backlog (backlog.md) / 백로그 관리
 
 Install: `npx skills add wintree86/plan-task-fix`
