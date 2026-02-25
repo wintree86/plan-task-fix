@@ -28,30 +28,28 @@ npx skills add wintree86/plan-task-fix --skill fix
 ```
 /plan create "My App"     →  plan.md created
         ↓
-/task generate            →  task.md created
-        ↓
    [Development]
         ↓
-/task done                →  Mark completed tasks
+/task done                →  Mark completed tasks directly in plan.md
         ↓
-/fix bug "keyboard issue" →  Log bugs as you find them
+/fix bug "keyboard issue" →  Log bugs to backlog.md as you find them
         ↓
 /plan add "new feature"   →  Evolve the plan
         ↓
-/task sync                →  Sync task.md (preserves progress)
-        ↓
 /task                     →  Check overall progress
+        ↓
+/task wrap                →  End session, archive tasks, extract knowledge, & suggest next focus
 ```
 
 ### Files Generated / 생성되는 파일
 
 ```
 .claude-docs/
-├── plan.md        # Project plan with Phases & tasks
-├── task.md        # Task list with progress tracking
-├── progress.md    # Progress change log
-├── backlog.md     # Bugs, improvements, tech debt
-└── archived.md    # Archived completed tasks (auto-generated)
+├── plan.md        # Source of truth: Plan and progress tracking / 기획 및 진척도 원본
+├── progress.md    # Progress change log / 진척도 변경 로그
+├── backlog.md     # Bugs, improvements, tech debt / 백로그
+├── archive.md     # Archived completed tasks (auto-wrapped) / 랩업으로 아카이빙된 태스크
+└── knowledge.md   # Extracted learnings and decisions / 추출된 팁과 아키텍처 결정(TIL)
 ```
 
 ## Quick Reference / 명령어 요약
@@ -70,12 +68,10 @@ npx skills add wintree86/plan-task-fix --skill fix
 | Command | Description |
 |---------|-------------|
 | `/task` | Show progress summary / 현황 요약 |
-| `/task generate` | Generate task.md from plan / task.md 생성 |
 | `/task update` | Recalculate progress / 진행률 업데이트 |
 | `/task done` | Mark tasks complete / 완료 처리 |
 | `/task verify` | Verify implementation / 구현 검증 |
-| `/task diff` | Preview plan vs task changes / 변경사항 미리보기 |
-| `/task sync` | Sync task.md from plan / plan.md → task.md 동기화 |
+| `/task wrap` | Run the 2-phase Multi-Agent Session Wrap-up / 세션 랩업 파이프라인 (아카이빙 및 지식 추출) |
 
 ### `/fix` - Backlog Manager / 백로그 관리
 
@@ -92,8 +88,7 @@ npx skills add wintree86/plan-task-fix --skill fix
 ## Examples / 예시
 
 See the [`examples/`](./examples/) directory for sample output:
-- [`plan.md`](./examples/plan.md) - Sample project plan
-- [`task.md`](./examples/task.md) - Sample task list with progress table
+- [`plan.md`](./examples/plan.md) - Sample project plan with progress tracking
 - [`backlog.md`](./examples/backlog.md) - Sample backlog with bugs, improvements, tech debt
 
 ## Compatibility / 호환성
@@ -131,7 +126,13 @@ cp ~/.agents/skills/task/task-tracker.md ~/.claude/agents/
 │   └── plan-generator.md     # Optional standalone agent
 ├── task/
 │   ├── SKILL.md              # Skill definition (self-contained)
-│   └── task-tracker.md       # Optional standalone agent
+│   ├── task-tracker.md       # Optional standalone agent
+│   └── agents/               # Subagents for `/task wrap` parallel analysis
+│       ├── progress-analyzer.md
+│       ├── context-archiver.md
+│       ├── knowledge-extractor.md
+│       ├── next-planner.md
+│       └── wrap-coordinator.md
 └── fix/
     └── SKILL.md              # Skill definition (no agent needed)
 ```

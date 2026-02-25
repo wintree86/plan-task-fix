@@ -1,17 +1,24 @@
-# My App
+# My App Plan & Tasks
 
 **Created:** 2026-02-03
-**Last Updated:** 2026-02-03
+**Last Updated:** 2026-02-25
 
-## Project Overview
+## Progress Overview
 
-A sample project demonstrating plan.md structure.
+| Phase | Name | Status | Progress |
+|-------|------|--------|----------|
+| 1 | MVP | in-progress | 2/5 (40%) |
+| 2 | Enhancement | pending | 0/4 (0%) |
+| 3 | Polish & Release | pending | 0/4 (0%) |
+
+**Overall: 2/13 (15%)**
 
 ---
 
 ## Development Plan
 
 ### Phase 1: MVP
+**Status:** in-progress
 
 - [x] 1.1 Project setup and scaffolding
 - [x] 1.2 Basic UI layout
@@ -20,6 +27,7 @@ A sample project demonstrating plan.md structure.
 - [ ] 1.5 Basic error handling
 
 ### Phase 2: Enhancement
+**Status:** pending
 
 - [ ] 2.1 Performance optimization
 - [ ] 2.2 i18n support (multi-language)
@@ -27,6 +35,7 @@ A sample project demonstrating plan.md structure.
 - [ ] 2.4 Push notifications
 
 ### Phase 3: Polish & Release
+**Status:** pending
 
 - [ ] 3.1 Unit test coverage (>80%)
 - [ ] 3.2 E2E testing
