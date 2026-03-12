@@ -38,8 +38,19 @@ npx skills add wintree86/plan-task-fix --skill fix
         ↓
 /task                     →  Check overall progress
         ↓
-/task wrap                →  End session, archive tasks, extract knowledge, & suggest next focus
+/task wrap                →  Compact context, update memory docs, & suggest next focus
 ```
+
+## When To Use What
+
+- Use `plan.md` for committed roadmap work: features, scheduled refactors, and active execution tasks.
+- Use `backlog.md` for discovered bugs, improvements, and tech debt that are not yet promoted into the roadmap.
+- Use `/task wrap` to read both documents together and generate the next-session handoff.
+
+Rule of thumb:
+- small fix -> keep in `backlog.md`
+- bigger multi-step fix -> promote into `plan.md`
+- important open fixes -> surface in `context.md` during wrap
 
 ### Files Generated / 생성되는 파일
 
@@ -48,8 +59,9 @@ npx skills add wintree86/plan-task-fix --skill fix
 ├── plan.md        # Source of truth: Plan and progress tracking / 기획 및 진척도 원본
 ├── progress.md    # Progress change log / 진척도 변경 로그
 ├── backlog.md     # Bugs, improvements, tech debt / 백로그
-├── archive.md     # Archived completed tasks (auto-wrapped) / 랩업으로 아카이빙된 태스크
-└── knowledge.md   # Extracted learnings and decisions / 추출된 팁과 아키텍처 결정(TIL)
+├── archive.md     # Archived completed phase details / 완료된 Phase 상세 아카이브
+├── knowledge.md   # Extracted learnings and decisions / 추출된 팁과 아키텍처 결정(TIL)
+└── context.md     # Short handoff for the next LLM session / 다음 세션용 압축 컨텍스트
 ```
 
 ## Quick Reference / 명령어 요약
@@ -71,7 +83,7 @@ npx skills add wintree86/plan-task-fix --skill fix
 | `/task update` | Recalculate progress / 진행률 업데이트 |
 | `/task done` | Mark tasks complete / 완료 처리 |
 | `/task verify` | Verify implementation / 구현 검증 |
-| `/task wrap` | Run the 2-phase Multi-Agent Session Wrap-up / 세션 랩업 파이프라인 (아카이빙 및 지식 추출) |
+| `/task wrap` | Compact context into progress/archive/knowledge/context docs / 세션 컨텍스트 압축 및 정리 |
 
 ### `/fix` - Backlog Manager / 백로그 관리
 
@@ -90,20 +102,17 @@ npx skills add wintree86/plan-task-fix --skill fix
 See the [`examples/`](./examples/) directory for sample output:
 - [`plan.md`](./examples/plan.md) - Sample project plan with progress tracking
 - [`backlog.md`](./examples/backlog.md) - Sample backlog with bugs, improvements, tech debt
+- [`context.md`](./examples/context.md) - Sample next-session handoff after wrap
 
 ## Compatibility / 호환성
 
-Designed for AI coding agents that support markdown-based skills:
-- **Claude Code** (Anthropic)
-- **Cursor**
-- **Windsurf**
-- **GitHub Copilot**
-- Any agent supporting `SKILL.md` format
+Designed for AI coding agents that can follow Markdown skill instructions and read/write project files.
+The core workflow avoids environment-specific interactive tools where possible.
 
 ## Advanced Setup (Optional) / 고급 설정 (선택)
 
 Each skill package includes standalone agent files (`plan-generator.md`, `task-tracker.md`).
-These are **not required** -- all logic is already embedded in `SKILL.md` files.
+These are optional helpers. The main workflow is defined in each `SKILL.md`.
 
 각 스킬 패키지에 standalone agent 파일이 포함되어 있습니다.
 이 파일들은 **필수가 아닙니다** -- 모든 로직이 이미 SKILL.md에 내장되어 있습니다.
@@ -127,7 +136,7 @@ cp ~/.agents/skills/task/task-tracker.md ~/.claude/agents/
 ├── task/
 │   ├── SKILL.md              # Skill definition (self-contained)
 │   ├── task-tracker.md       # Optional standalone agent
-│   └── agents/               # Subagents for `/task wrap` parallel analysis
+│   └── agents/               # Optional helper agents for wrap analysis
 │       ├── progress-analyzer.md
 │       ├── context-archiver.md
 │       ├── knowledge-extractor.md
@@ -139,8 +148,8 @@ cp ~/.agents/skills/task/task-tracker.md ~/.claude/agents/
 
 ## Bilingual Support / 이중언어 지원
 
-All output messages are bilingual (English / Korean).
-모든 출력 메시지는 한영 병기로 표시됩니다.
+Most examples are bilingual (English / Korean), but the file formats themselves stay simple and tool-agnostic.
+예시는 한영 병기를 유지하지만 파일 포맷은 단순하고 범용적으로 유지합니다.
 
 ```
 ✅ Created / 생성 완료

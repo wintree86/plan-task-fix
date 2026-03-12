@@ -7,29 +7,25 @@
 
 | Phase | Name | Status | Progress |
 |-------|------|--------|----------|
-| 1 | MVP | in-progress | 2/5 (40%) |
-| 2 | Enhancement | pending | 0/4 (0%) |
+| 1 | MVP | archived | 5/5 (100%) |
+| 2 | Enhancement | in-progress | 1/4 (25%) |
 | 3 | Polish & Release | pending | 0/4 (0%) |
 
-**Overall: 2/13 (15%)**
+**Overall: 6/13 (46%)**
 
 ---
 
 ## Development Plan
 
 ### Phase 1: MVP
-**Status:** in-progress
+**Status:** archived
 
-- [x] 1.1 Project setup and scaffolding
-- [x] 1.2 Basic UI layout
-- [ ] 1.3 Core feature implementation
-- [ ] 1.4 Data persistence layer
-- [ ] 1.5 Basic error handling
+Archived to `archive.md` on 2026-02-20. Summary: project setup, base UI, core flow, persistence, and basic error handling completed.
 
 ### Phase 2: Enhancement
-**Status:** pending
+**Status:** in-progress
 
-- [ ] 2.1 Performance optimization
+- [x] 2.1 Performance optimization
 - [ ] 2.2 i18n support (multi-language)
 - [ ] 2.3 Dark mode theme
 - [ ] 2.4 Push notifications
